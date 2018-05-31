@@ -24,6 +24,7 @@
     "url": "git+https://github.com/bouzuya/bs.git"
   },
   "scripts": {
+    "pulp": "pulp",
     "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
