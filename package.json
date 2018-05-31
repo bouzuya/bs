@@ -1,0 +1,24 @@
+{
+  "name": "bs",
+  "description": "A proof of concept test for bbn 5.x.",
+  "version": "1.0.0",
+  "author": {
+    "email": "m@bouzuya.net",
+    "name": "bouzuya",
+    "url": "https://bouzuya.net/"
+  },
+  "bugs": {
+    "url": "https://github.com/bouzuya/bs/issues"
+  },
+  "homepage": "https://github.com/bouzuya/bs#readme",
+  "keywords": [],
+  "license": "MIT",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bouzuya/bs.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
