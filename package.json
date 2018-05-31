@@ -31,6 +31,7 @@
     "prepare": "pulp --psc-package build",
     "psc-package": "psc-package",
     "pulp": "pulp",
+    "start": "pulp --psc-package run",
     "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
