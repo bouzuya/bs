@@ -15,6 +15,10 @@
     "pulp": "^12.2.0",
     "purescript": "^0.11.7"
   },
+  "files": [
+    "index.js",
+    "output"
+  ],
   "homepage": "https://github.com/bouzuya/bs#readme",
   "keywords": [],
   "license": "MIT",
@@ -24,6 +28,7 @@
     "url": "git+https://github.com/bouzuya/bs.git"
   },
   "scripts": {
+    "prepare": "pulp --psc-package build",
     "pulp": "pulp",
     "test": "echo \"Error: no test specified\" && exit 1"
   }
