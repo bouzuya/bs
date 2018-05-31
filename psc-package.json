@@ -5,6 +5,7 @@
   "depends": [
     "console",
     "eff",
+    "node-fs",
     "prelude",
     "psci-support"
   ]
