@@ -6,6 +6,7 @@
     "console",
     "eff",
     "node-fs",
+    "node-path",
     "prelude",
     "psci-support"
   ]

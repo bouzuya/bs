@@ -6,7 +6,8 @@ import Control.Monad.Eff.Exception (EXCEPTION)
 import Data.Array as Array
 import Node.FS (FS)
 import Node.FS.Sync (readdir)
-import Prelude (Unit, bind, discard, show, (<$>), (<<<))
+import Node.Path (extname)
+import Prelude (Unit, bind, compose, discard, eq, map, show, (<<<))
 
 main
   :: forall e
@@ -20,6 +21,10 @@ main
 main = do
   let
     currentDirectory = "."
-  file <- Array.last <<< Array.sort <$> readdir currentDirectory
-  log (show file)
+  files <- readdir currentDirectory
+  let
+    filter = Array.filter (compose (eq ".json") extname)
+    filteredFiles = filter files
+    lastFilteredFile = compose Array.last Array.sort filteredFiles
+  log (show lastFilteredFile)
   log "Hello sailor!"
