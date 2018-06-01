@@ -16,6 +16,14 @@ import Node.Path (FilePath, dirname, extname, resolve)
 import Node.Path as Path
 import Prelude (Unit, bind, compare, compose, conj, const, eq, flip, map, pure, show)
 
+readDir'
+  :: forall e
+  . FilePath -> Eff (exception :: EXCEPTION, fs :: FS | e) (Array FilePath)
+readDir' dir = map (map (compose Path.concat (Array.snoc [dir]))) (readdir dir)
+
+startsWith :: String -> String -> Boolean
+startsWith p = compose (eq (Just 0)) (String.indexOf (String.Pattern p))
+
 getPrevFile
   :: forall e
   . FilePath
@@ -26,9 +34,9 @@ getPrevFile
 getPrevFile root file = do
   fileStat <- stat file
   let dir = if isDirectory fileStat then file else dirname file
-  files <- map (map (compose Path.concat (Array.snoc [dir]))) (readdir dir)
+  files <- readDir' dir
   let
-    rootFilter = compose (eq (Just 0)) (String.indexOf (String.Pattern root))
+    rootFilter = startsWith root
     prevFilter = if isDirectory fileStat
       then const true
       else greaterThan file
