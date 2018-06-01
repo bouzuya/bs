@@ -28,7 +28,7 @@ getPrevFile root file = do
   let dir = if isDirectory fileStat then file else dirname file
   files <- map (map (compose Path.concat (Array.snoc [dir]))) (readdir dir)
   let
-    rootFilter = compose (eq (Just 0)) (String.indexOf (String.Pattern file))
+    rootFilter = compose (eq (Just 0)) (String.indexOf (String.Pattern root))
     prevFilter = if isDirectory fileStat
       then const true
       else greaterThan file
