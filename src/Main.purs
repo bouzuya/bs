@@ -6,30 +6,33 @@ import Control.Monad.Eff.Exception (EXCEPTION)
 import Data.Array as Array
 import Data.Foldable (foldM)
 import Data.Maybe (Maybe(..))
-import Data.Ord (lessThan)
+import Data.Ord (greaterThan)
+import Data.String as String
 import Data.Traversable (for)
 import Node.FS (FS)
 import Node.FS.Stats (isDirectory)
 import Node.FS.Sync (readdir, stat)
-import Node.Path (FilePath, dirname, extname)
+import Node.Path (FilePath, dirname, extname, resolve)
 import Node.Path as Path
-import Prelude (Unit, bind, compare, compose, const, eq, flip, map, pure, show)
+import Prelude (Unit, bind, compare, compose, conj, const, eq, flip, map, pure, show)
 
 getPrevFile
   :: forall e
   . FilePath
+  -> FilePath
   -> Eff
     (exception :: EXCEPTION, fs :: FS | e)
     (Maybe FilePath)
-getPrevFile file = do
+getPrevFile root file = do
   fileStat <- stat file
   let dir = if isDirectory fileStat then file else dirname file
   files <- map (map (compose Path.concat (Array.snoc [dir]))) (readdir dir)
   let
+    rootFilter = compose (eq (Just 0)) (String.indexOf (String.Pattern file))
     prevFilter = if isDirectory fileStat
       then const true
-      else lessThan file
-    files' = Array.filter prevFilter files
+      else greaterThan file
+    files' = Array.filter (\f -> conj (prevFilter f) (rootFilter f)) files
     sortedFiles = Array.sortBy (flip compare) files' -- order by desc
     filter = Array.filter (compose (eq ".json") extname)
     sortAndFilteredFiles = filter sortedFiles
@@ -43,7 +46,7 @@ getPrevFile file = do
           else Nothing
       let
         dirs = Array.catMaybes maybes
-        f Nothing b = getPrevFile b
+        f Nothing b = getPrevFile root b
         f m@(Just a) _ = pure m
       foldM f Nothing dirs
 
@@ -57,6 +60,8 @@ main
     )
     Unit
 main = do
-  let dir = "./src"
-  file <- getPrevFile dir
+  let
+    dir = resolve [] "." -- ? No Effect ?
+    cur = resolve [] "./package-lock.json" -- ? No Effect ?
+  file <- getPrevFile dir cur
   log (show file)
