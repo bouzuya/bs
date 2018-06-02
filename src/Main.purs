@@ -55,7 +55,7 @@ getPrevFile root file = go root file [] (maybe root dirname file)
         Just f -> pure (Just f)
         Nothing -> do
           -- search child dir
-          childDirs <- filterDir files
+          childDirs <- filterDir filtered
           let
             g Nothing d = go root Nothing (append dirs [dir]) d
             g m@(Just a) _ = pure m
