@@ -6,16 +6,27 @@ import Control.Monad.Eff.Exception (EXCEPTION)
 import Data.Array as Array
 import Data.Foldable (foldM)
 import Data.Maybe (Maybe(..), maybe)
-import Data.Monoid (guard)
+import Data.Monoid (append, guard)
 import Data.Ord (greaterThan)
 import Data.String as String
 import Data.Traversable (for)
+import Data.Tuple (Tuple(..))
 import Node.FS (FS)
 import Node.FS.Stats (isDirectory)
 import Node.FS.Sync (readdir, stat)
 import Node.Path (FilePath, dirname, extname, resolve)
 import Node.Path as Path
-import Prelude (Unit, bind, compare, compose, const, eq, flip, map, otherwise, pure, show)
+import Prelude (Unit, bind, compare, compose, conj, const, eq, flip, map, otherwise, pure, show)
+
+filterDir
+  :: forall e
+  . Array FilePath
+  -> Eff (exception :: EXCEPTION, fs :: FS | e) (Array FilePath)
+filterDir files = do
+  maybes <- for files \f -> do
+    s <- stat f
+    pure (guard (isDirectory s) (Just f))
+  pure (Array.catMaybes maybes)
 
 readDir'
   :: forall e
@@ -32,32 +43,26 @@ getPrevFile
   -> Eff
     (exception :: EXCEPTION, fs :: FS | e)
     (Maybe FilePath)
-getPrevFile root file =
-  go root (maybe root dirname file) file
+getPrevFile root file = go root file [] (maybe root dirname file)
   where
-    go root dir file | startsWith root dir = do
+    prevFilter = Array.filter (maybe (const true) greaterThan file)
+    go root file dirs dir | conj (eq (Array.find (eq dir) dirs) Nothing) (startsWith root dir) = do
       files <- readDir' dir
-      let
-        prevFilter = maybe (const true) greaterThan file
-        files' = Array.filter prevFilter files
-        sortedFiles = Array.sortBy (flip compare) files' -- order by desc
-      case Array.find (compose (eq ".json") extname) sortedFiles of
+      let filtered = Array.sortBy (flip compare) (prevFilter files) -- order by desc
+      case Array.find (compose (eq ".json") extname) filtered of
         Just f -> pure (Just f)
         Nothing -> do
           -- search child dir
-          maybes <- for sortedFiles \f -> do
-            s <- stat f
-            pure (guard (isDirectory s) (Just f))
+          childDirs <- filterDir files
           let
-            dirs = Array.catMaybes maybes
-            g Nothing d = go root d Nothing
+            g Nothing d = go root Nothing (append dirs [dir]) d
             g m@(Just a) _ = pure m
-          m <- foldM g Nothing dirs
-          -- TODO: search parent dir
+          m <- foldM g Nothing childDirs
+          -- search parent dir
           case m of
             Just f -> pure (Just f)
-            Nothing -> pure Nothing
-    go _ _ _ | otherwise = pure Nothing
+            Nothing -> go root Nothing (append dirs [dir]) (dirname dir)
+    go _ _ _ _ | otherwise = pure Nothing
 
 main
   :: forall e

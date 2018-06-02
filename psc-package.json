@@ -8,6 +8,7 @@
     "node-fs",
     "node-path",
     "prelude",
-    "psci-support"
+    "psci-support",
+    "test-unit"
   ]
 }
