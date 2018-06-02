@@ -52,18 +52,18 @@ getPrevFile root file = go root file [] (maybe root dirname file)
       files <- readDir' dir
       let filtered = Array.sortBy (flip compare) (prevFilter files) -- order by desc
       case Array.find (compose (eq ".json") extname) filtered of
-        Just f -> pure (Just f)
-        Nothing -> do
-          -- search child dir
+        Just f -> pure (Just f) -- found
+        Nothing -> do -- search child dir
           childDirs <- filterDir filtered
           let
-            g Nothing d = go root Nothing (append dirs [dir]) d
-            g m@(Just a) _ = pure m
+            nextDirs = append dirs [dir]
+            g (Just f) _ = pure (Just f)
+            g Nothing d = go root Nothing nextDirs d
           m <- foldM g Nothing childDirs
-          -- search parent dir
           case m of
-            Just f -> pure (Just f)
-            Nothing -> go root Nothing (append dirs [dir]) (dirname dir)
+            Just f -> pure (Just f) -- found
+            Nothing -> do -- search parent dir
+              go root Nothing nextDirs (dirname dir)
     go _ _ _ _ | otherwise = pure Nothing
 
 main
