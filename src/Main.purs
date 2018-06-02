@@ -28,18 +28,17 @@ getPrevFile
   :: forall e
   . FilePath
   -> FilePath
+  -> Maybe FilePath
   -> Eff
     (exception :: EXCEPTION, fs :: FS | e)
     (Maybe FilePath)
-getPrevFile root file = do
-  fileStat <- stat file
-  let dir = if isDirectory fileStat then file else dirname file
+getPrevFile root dir file = do
   files <- readDir' dir
   let
     rootFilter = startsWith root
-    prevFilter = if isDirectory fileStat
-      then const true
-      else greaterThan file
+    prevFilter = case file of
+      Nothing -> const true
+      Just f -> greaterThan f
     files' = Array.filter (\f -> conj (prevFilter f) (rootFilter f)) files
     sortedFiles = Array.sortBy (flip compare) files' -- order by desc
     filter = Array.filter (compose (eq ".json") extname)
@@ -47,6 +46,7 @@ getPrevFile root file = do
   case Array.head sortAndFilteredFiles of
     Just f -> pure (Just f)
     Nothing -> do
+      -- search child dir
       maybes <- for sortedFiles \f -> do
         s <- stat f
         pure if isDirectory s
@@ -54,9 +54,13 @@ getPrevFile root file = do
           else Nothing
       let
         dirs = Array.catMaybes maybes
-        f Nothing b = getPrevFile root b
-        f m@(Just a) _ = pure m
-      foldM f Nothing dirs
+        g Nothing d = getPrevFile root d Nothing
+        g m@(Just a) _ = pure m
+      m <- foldM g Nothing dirs
+      -- TODO: search parent dir
+      case m of
+        Just f -> pure (Just f)
+        Nothing -> pure Nothing
 
 main
   :: forall e
@@ -71,5 +75,5 @@ main = do
   let
     dir = resolve [] "." -- ? No Effect ?
     cur = resolve [] "./package-lock.json" -- ? No Effect ?
-  file <- getPrevFile dir cur
+  file <- getPrevFile dir (dirname cur) (Just cur)
   log (show file)
