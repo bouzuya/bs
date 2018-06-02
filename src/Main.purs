@@ -14,7 +14,7 @@ import Node.FS.Stats (isDirectory)
 import Node.FS.Sync (readdir, stat)
 import Node.Path (FilePath, dirname, extname, resolve)
 import Node.Path as Path
-import Prelude (Unit, bind, compare, compose, conj, const, eq, flip, map, pure, show)
+import Prelude (Unit, bind, compare, compose, const, eq, flip, map, otherwise, pure, show)
 
 readDir'
   :: forall e
@@ -32,14 +32,13 @@ getPrevFile
   -> Eff
     (exception :: EXCEPTION, fs :: FS | e)
     (Maybe FilePath)
-getPrevFile root dir file = do
+getPrevFile root dir file | startsWith root dir = do
   files <- readDir' dir
   let
-    rootFilter = startsWith root
     prevFilter = case file of
       Nothing -> const true
       Just f -> greaterThan f
-    files' = Array.filter (\f -> conj (prevFilter f) (rootFilter f)) files
+    files' = Array.filter prevFilter files
     sortedFiles = Array.sortBy (flip compare) files' -- order by desc
     filter = Array.filter (compose (eq ".json") extname)
     sortAndFilteredFiles = filter sortedFiles
@@ -61,6 +60,7 @@ getPrevFile root dir file = do
       case m of
         Just f -> pure (Just f)
         Nothing -> pure Nothing
+getPrevFile _ _ _ | otherwise = pure Nothing
 
 main
   :: forall e
@@ -73,7 +73,7 @@ main
     Unit
 main = do
   let
-    dir = resolve [] "." -- ? No Effect ?
+    root = resolve [] "." -- ? No Effect ?
     cur = resolve [] "./package-lock.json" -- ? No Effect ?
-  file <- getPrevFile dir (dirname cur) (Just cur)
+  file <- getPrevFile root (dirname cur) (Just cur)
   log (show file)
