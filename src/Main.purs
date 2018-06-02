@@ -6,6 +6,7 @@ import Control.Monad.Eff.Exception (EXCEPTION)
 import Data.Array as Array
 import Data.Foldable (foldM)
 import Data.Maybe (Maybe(..), maybe)
+import Data.Monoid (guard)
 import Data.Ord (greaterThan)
 import Data.String as String
 import Data.Traversable (for)
@@ -27,36 +28,36 @@ startsWith p = compose (eq (Just 0)) (String.indexOf (String.Pattern p))
 getPrevFile
   :: forall e
   . FilePath
-  -> FilePath
   -> Maybe FilePath
   -> Eff
     (exception :: EXCEPTION, fs :: FS | e)
     (Maybe FilePath)
-getPrevFile root dir file | startsWith root dir = do
-  files <- readDir' dir
-  let
-    prevFilter = maybe (const true) greaterThan file
-    files' = Array.filter prevFilter files
-    sortedFiles = Array.sortBy (flip compare) files' -- order by desc
-  case Array.find (compose (eq ".json") extname) sortedFiles of
-    Just f -> pure (Just f)
-    Nothing -> do
-      -- search child dir
-      maybes <- for sortedFiles \f -> do
-        s <- stat f
-        pure if isDirectory s
-          then Just f
-          else Nothing
+getPrevFile root file =
+  go root (maybe root dirname file) file
+  where
+    go root dir file | startsWith root dir = do
+      files <- readDir' dir
       let
-        dirs = Array.catMaybes maybes
-        g Nothing d = getPrevFile root d Nothing
-        g m@(Just a) _ = pure m
-      m <- foldM g Nothing dirs
-      -- TODO: search parent dir
-      case m of
+        prevFilter = maybe (const true) greaterThan file
+        files' = Array.filter prevFilter files
+        sortedFiles = Array.sortBy (flip compare) files' -- order by desc
+      case Array.find (compose (eq ".json") extname) sortedFiles of
         Just f -> pure (Just f)
-        Nothing -> pure Nothing
-getPrevFile _ _ _ | otherwise = pure Nothing
+        Nothing -> do
+          -- search child dir
+          maybes <- for sortedFiles \f -> do
+            s <- stat f
+            pure (guard (isDirectory s) (Just f))
+          let
+            dirs = Array.catMaybes maybes
+            g Nothing d = go root d Nothing
+            g m@(Just a) _ = pure m
+          m <- foldM g Nothing dirs
+          -- TODO: search parent dir
+          case m of
+            Just f -> pure (Just f)
+            Nothing -> pure Nothing
+    go _ _ _ | otherwise = pure Nothing
 
 main
   :: forall e
@@ -71,5 +72,5 @@ main = do
   let
     root = resolve [] "." -- ? No Effect ?
     cur = resolve [] "./package-lock.json" -- ? No Effect ?
-  file <- getPrevFile root (dirname cur) (Just cur)
+  file <- getPrevFile root (Just cur)
   log (show file)
