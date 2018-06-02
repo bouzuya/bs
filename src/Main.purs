@@ -1,4 +1,7 @@
-module Main where
+module Main
+  ( getPrevFile
+  , main
+  ) where
 
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE, log)
@@ -10,7 +13,6 @@ import Data.Monoid (append, guard)
 import Data.Ord (greaterThan)
 import Data.String as String
 import Data.Traversable (for)
-import Data.Tuple (Tuple(..))
 import Node.FS (FS)
 import Node.FS.Stats (isDirectory)
 import Node.FS.Sync (readdir, stat)
