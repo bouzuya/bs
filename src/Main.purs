@@ -5,7 +5,7 @@ import Control.Monad.Eff.Console (CONSOLE, log)
 import Control.Monad.Eff.Exception (EXCEPTION)
 import Data.Array as Array
 import Data.Foldable (foldM)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Data.Ord (greaterThan)
 import Data.String as String
 import Data.Traversable (for)
@@ -35,14 +35,10 @@ getPrevFile
 getPrevFile root dir file | startsWith root dir = do
   files <- readDir' dir
   let
-    prevFilter = case file of
-      Nothing -> const true
-      Just f -> greaterThan f
+    prevFilter = maybe (const true) greaterThan file
     files' = Array.filter prevFilter files
     sortedFiles = Array.sortBy (flip compare) files' -- order by desc
-    filter = Array.filter (compose (eq ".json") extname)
-    sortAndFilteredFiles = filter sortedFiles
-  case Array.head sortAndFilteredFiles of
+  case Array.find (compose (eq ".json") extname) sortedFiles of
     Just f -> pure (Just f)
     Nothing -> do
       -- search child dir
