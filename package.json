@@ -16,8 +16,7 @@
     "purescript": "^0.11.7"
   },
   "files": [
-    "index.js",
-    "output"
+    "index.js"
   ],
   "homepage": "https://github.com/bouzuya/bs#readme",
   "keywords": [],
