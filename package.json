@@ -28,7 +28,7 @@
     "url": "git+https://github.com/bouzuya/bs.git"
   },
   "scripts": {
-    "prepare": "pulp --psc-package build",
+    "prepare": "pulp --psc-package build --optimise --modules Lib --skip-entry-point --to index.js && echo 'module.exports = PS[\"Lib\"];' >> index.js",
     "psc-package": "psc-package",
     "pulp": "pulp",
     "start": "pulp --psc-package run",
