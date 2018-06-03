@@ -67,3 +67,9 @@ main = do
       test "1" do
         r <- liftEff $ getPrevFile dir Nothing
         Assert.equal r (Just (dir <> "/2/1.json"))
+      test "2" do
+        r <- liftEff $ getPrevFile dir (Just (dir <> "/2/1.json"))
+        Assert.equal r (Just (dir <> "/1.json"))
+      test "3" do
+        r <- liftEff $ getPrevFile dir (Just (dir <> "/1.json"))
+        Assert.equal r Nothing
