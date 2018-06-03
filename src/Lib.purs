@@ -37,11 +37,11 @@ getPrevFile'
 getPrevFile' root file = go root file [] (maybe root dirname file)
   where
     contains x xs = isJust (Array.find (eq x) xs)
-    prevFilter = Array.filter (maybe (const true) greaterThan file)
-    go root' file dirs dir
+    go root' file' dirs dir
       | conj (startsWith root' dir) (not (contains dir dirs)) = do
         files <- readDir' dir
         let
+          prevFilter = Array.filter (maybe (const true) greaterThan file')
           -- order by desc
           filtered = Array.sortBy (flip compare) (prevFilter files)
           nextDirs = append dirs [dir]
@@ -63,7 +63,7 @@ getPrevFile' root file = go root file [] (maybe root dirname file)
         case currentDirResult of
           Just found -> pure (Just found)
           Nothing -> do -- search parent dir
-            go root Nothing nextDirs (dirname dir)
+            go root file' nextDirs (dirname dir)
     go _ _ _ _
       | otherwise = pure Nothing
 
