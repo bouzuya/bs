@@ -36,40 +36,40 @@ main = do
       let dir = resolve [] "test/data/2"
       test "1" do
         r <- liftEff $ getPrevFile dir Nothing
-        Assert.equal r (Just (dir <> "/1.json"))
+        Assert.equal r $ Just $ dir <> "/1.json"
       test "2" do
-        r <- liftEff $ getPrevFile dir (Just (dir <> "/1.json"))
+        r <- liftEff $ getPrevFile dir $ Just $ dir <> "/1.json"
         Assert.equal r Nothing
     suite "3" do
       let dir = resolve [] "test/data/3"
       test "1" do
         r <- liftEff $ getPrevFile dir Nothing
-        Assert.equal r (Just (dir <> "/2.json"))
+        Assert.equal r $ Just $ dir <> "/2.json"
       test "2" do
-        r <- liftEff $ getPrevFile dir (Just (dir <> "/2.json"))
-        Assert.equal r (Just (dir <> "/1.json"))
+        r <- liftEff $ getPrevFile dir $ Just $ dir <> "/2.json"
+        Assert.equal r $ Just $ dir <> "/1.json"
       test "3" do
-        r <- liftEff $ getPrevFile dir (Just (dir <> "/1.json"))
+        r <- liftEff $ getPrevFile dir $ Just $ dir <> "/1.json"
         Assert.equal r Nothing
     suite "4" do
       let dir = resolve [] "test/data/4"
       test "1" do
         r <- liftEff $ getPrevFile dir Nothing
-        Assert.equal r (Just (dir <> "/2/1.json"))
+        Assert.equal r $ Just $ dir <> "/2/1.json"
       test "2" do
-        r <- liftEff $ getPrevFile dir (Just (dir <> "/2/1.json"))
-        Assert.equal r (Just (dir <> "/1/1.json"))
+        r <- liftEff $ getPrevFile dir $ Just $ dir <> "/2/1.json"
+        Assert.equal r $ Just $ dir <> "/1/1.json"
       test "3" do
-        r <- liftEff $ getPrevFile dir (Just (dir <> "/1/1.json"))
+        r <- liftEff $ getPrevFile dir $ Just $ dir <> "/1/1.json"
         Assert.equal r Nothing
     suite "5" do
       let dir = resolve [] "test/data/5"
       test "1" do
         r <- liftEff $ getPrevFile dir Nothing
-        Assert.equal r (Just (dir <> "/2/1.json"))
+        Assert.equal r $ Just $ dir <> "/2/1.json"
       test "2" do
-        r <- liftEff $ getPrevFile dir (Just (dir <> "/2/1.json"))
-        Assert.equal r (Just (dir <> "/1.json"))
+        r <- liftEff $ getPrevFile dir $ Just $ dir <> "/2/1.json"
+        Assert.equal r $ Just $ dir <> "/1.json"
       test "3" do
-        r <- liftEff $ getPrevFile dir (Just (dir <> "/1.json"))
+        r <- liftEff $ getPrevFile dir $ Just $ dir <> "/1.json"
         Assert.equal r Nothing
