@@ -3,37 +3,26 @@ module Lib
   , getPrevFile'
   ) where
 
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Exception (EXCEPTION)
 import Data.Array as Array
 import Data.Foldable (foldM)
 import Data.Maybe (Maybe(..), isJust, maybe)
-import Data.Monoid (append)
 import Data.Nullable (Nullable, toMaybe, toNullable)
 import Data.Ord (greaterThan)
 import Data.String as String
-import Node.FS (FS)
+import Effect (Effect)
 import Node.FS.Stats (isDirectory)
 import Node.FS.Sync (readdir, stat)
 import Node.Path (FilePath, dirname, extname)
 import Node.Path as Path
-import Prelude (bind, compare, compose, conj, const, eq, flip, map, not, otherwise, pure)
+import Prelude (append, bind, compare, compose, conj, const, eq, flip, map, not, otherwise, pure)
 
-readDir'
-  :: forall e
-  . FilePath -> Eff (exception :: EXCEPTION, fs :: FS | e) (Array FilePath)
+readDir' :: FilePath -> Effect (Array FilePath)
 readDir' dir = map (map (compose Path.concat (Array.snoc [dir]))) (readdir dir)
 
 startsWith :: String -> String -> Boolean
 startsWith p = compose (eq (Just 0)) (String.indexOf (String.Pattern p))
 
-getPrevFile'
-  :: forall e
-  . FilePath
-  -> Maybe FilePath
-  -> Eff
-    (exception :: EXCEPTION, fs :: FS | e)
-    (Maybe FilePath)
+getPrevFile' :: FilePath -> Maybe FilePath -> Effect (Maybe FilePath)
 getPrevFile' root file = go root file [] (maybe root dirname file)
   where
     contains x xs = isJust (Array.find (eq x) xs)
@@ -67,12 +56,6 @@ getPrevFile' root file = go root file [] (maybe root dirname file)
     go _ _ _ _
       | otherwise = pure Nothing
 
-getPrevFile
-  :: forall e
-  . FilePath
-  -> Nullable FilePath
-  -> Eff
-    (exception :: EXCEPTION, fs :: FS | e)
-    (Nullable FilePath)
+getPrevFile :: FilePath -> Nullable FilePath -> Effect (Nullable FilePath)
 getPrevFile root file =
   map toNullable (getPrevFile' root (toMaybe file))

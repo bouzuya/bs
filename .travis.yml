@@ -3,4 +3,5 @@ node_js: node
 cache:
   directories:
   - .psc-package
+  - .spago
   - output

@@ -11,9 +11,8 @@
     "url": "https://github.com/bouzuya/bs/issues"
   },
   "devDependencies": {
-    "psc-package": "^0.3.2",
-    "pulp": "^12.2.0",
-    "purescript": "^0.11.7"
+    "purescript": "^0.12.2",
+    "spago": "^0.6.4"
   },
   "files": [
     "index.js"
@@ -27,9 +26,10 @@
     "url": "git+https://github.com/bouzuya/bs.git"
   },
   "scripts": {
-    "prepare": "psc-package install && pulp --psc-package build --optimise --modules Lib --skip-entry-point --to index.js && echo 'module.exports = PS[\"Lib\"];' >> index.js",
-    "psc-package": "psc-package",
-    "pulp": "pulp",
-    "test": "pulp --psc-package test"
+    "build": "spago build",
+    "bundle": "spago make-module --main Lib --to index.js",
+    "prepare": "spago build && spago bundle",
+    "spago": "spago",
+    "test": "spago test"
   }
 }

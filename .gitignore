@@ -3,6 +3,7 @@
 /.psc-package/
 /.pulp-cache/
 /.purs*
+/.spago*
 /bower_components/
 /generated-docs/
 /index.js
