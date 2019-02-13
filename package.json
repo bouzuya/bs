@@ -11,6 +11,7 @@
     "url": "https://github.com/bouzuya/bs/issues"
   },
   "devDependencies": {
+    "npm-run-all": "^4.1.5",
     "purescript": "^0.12.2",
     "spago": "^0.6.4"
   },
@@ -28,7 +29,7 @@
   "scripts": {
     "build": "spago build",
     "bundle": "spago make-module --main Lib --to index.js",
-    "prepare": "spago build && spago bundle",
+    "prepare": "npm-run-all -s build bundle",
     "spago": "spago",
     "test": "spago test"
   }
